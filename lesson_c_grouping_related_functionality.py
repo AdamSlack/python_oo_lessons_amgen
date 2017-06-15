@@ -1,45 +1,5 @@
 import copy
 
-def generate_ids(number_of_ids):
-    """ generates a given number of ids """
-    ids = []
-    for id in range(0, number_of_ids):
-        ids.append(id)
-    return ids
-
-
-def generate_results(ids):
-    """ generates results for a collection of ids """
-    results = []
-    for id in ids:
-        results.append(id % 2)
-    return results
-
-
-def calculate_outcomes(results):
-    """ based on some results, determine if result was a success of failure"""
-    outcomes = []
-    for result in results:
-        if result == 0:
-            outcomes.append('SUCCESS')
-        else:
-            outcomes.append('FAILURE')
-    return outcomes
-
-
-def display_data_tagged(ids, results, outcomes):
-    """ displays the data with the col name aside each data point"""
-    for id, result, outcome in zip(ids, results, outcomes):
-        print('ID: ' + str(id) + '\tResult: ' + str(result) + '\tOutcome: ' + outcome)
-
-
-def display_data_headed(ids, results, outcomes):
-        """ displays the data with the col name aside each data point"""
-        print('IDs:\t\tResults:\t\tOutcomes:')
-        for id, result, outcome in zip(ids, results, outcomes):
-            print('' + str(id) + '\t\t' + str(result) + '\t\t\t' + outcome)
-
-
 class DataColumn:
     """ A column for holding an array of Data """
 
@@ -58,7 +18,6 @@ class DataColumn:
         print(self.column_name)
         for data in self.column_data:
             print(str(data))
-
 
 
 class DataFrame:
