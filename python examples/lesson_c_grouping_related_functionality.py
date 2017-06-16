@@ -1,5 +1,6 @@
 import copy
 
+
 class DataColumn:
     """ A column for holding an array of Data """
 
@@ -23,8 +24,9 @@ class DataColumn:
 class DataFrame:
     """ A Frame for holding collections of Data """
 
-    def __init__(self, columns):
+    def __init__(self, name='', columns=[]):
         """ Default constructor"""
+        self.name = name
         self.columns = {}
         for c in columns:
             self.columns[c.column_name] = c
