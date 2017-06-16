@@ -25,6 +25,16 @@ refuel_car <- function(tank_changes, tank_percentage) {
   return(c(tank_changes, new_tank))
 }
 
+na.padding <- function(x,len){
+  x[1:len]
+}
+
+
+data_frame_ify <- function(l,...){
+  maxlen <- max(sapply(l,length))
+  data.frame(lapply(l,na.padding,len=maxlen),...)
+}
+
 cars <- c('Punto', 'Golf', 'Jazz')
 
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
@@ -37,11 +47,9 @@ punto_fuel_hist <- drive_car(100, 10, 20)
 punto_fuel_hist <- refuel_car(punto_fuel_hist, 100)
 punto_fuel_hist <- drive_car(100, 10, 20)
 
-all_fuel_history <- list(punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
 
-car_frame <- data.frame(cars, punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
-car_frame.m <- melt(car_frame, id.vars='cars')
+car_frame <- data_frame_ify(cars, punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
 
-ggplot(car_frame.m, aes(cars, value)) +   
-  geom_bar(aes(fill = variable), position = "dodge", stat="identity")
+ggplot(car_frame, aes(x=seq(0,length(car_frame$punto_fuel_hist)-1), y=punto_fuel_hist)) +   
+  geom_line()
 
