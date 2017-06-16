@@ -1,0 +1,146 @@
+---
+title: "Object Oriented Programming With R"
+subtitle: "A walkthrough from Procedural to OOP"
+author: "Adam Slack"
+date: "2017-6-16"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## What is Object Oriented Programming?
+
+- Object Oriented Programming (OOP) is a programming paradigm
+
+- Involves the grouping of data with functions
+    + These functions are used to apply changes to the contained data
+
+- A collection of Data and Functions is called a class
+
+- A Class is a blue print, from which instances of an object can be made
+
+## Pros and Cons of OOP
+
+Like all programming methodologies, there are upsides and downsides
+
+Pros                                | Cons
+------------------------------------|--------------------------
+Scalable and Manageable Code bases  | Can be time consuming to design and produce
+Less Code Redundancy                | Not always worth the effor for small projects
+Portable and Re-usable code         |
+Protects data from unwanted changes |
+
+## Functionality vs Data
+* Think about a program that involves cars
+    + What can a car do? (The functionality)
+    + What information you can record about a car? (The data)
+  
+Functionality       | Recordable Information
+--------------------| ----------------------
+Refuel              | Fuel
+Drive               | Max Speed
+Check fuel level    | Current Speed
+check current speed | Colour
+
+## Where does this fit in with code?
+
+The information and functionality of a car in your program is specified inside of a class
+
+A Class is composed of two sections
+
+* Methods: 
+    + What can the object do?
+* Attributes:
+    + what information is stored with the object?
+    
+Each Class can be used to instantiate objects
+
+## A Class vs Objects
+
+- If a class is a blueprint, an object is a physical instance of it
+
+- A class can be used to create as many instances as you like
+    - Same functionality
+    - Same Data members
+    - Different values for the data.
+
+- Think of 3 different cars
+    + Fiat Punto, Volkswagen Golf', Honda Jazz
+
+- Each instance is a car
+    + Same functionality
+    + Same information can be recorded
+    + At anyone time each car will have different values
+    
+## Standard R procedural Code
+```{r echo = FALSE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+# 
+# R demonstration of Standard Procedural code.
+# 
+
+invisible(library(ggplot2))
+invisible(library(reshape2))
+```
+
+```{r echo = TRUE}
+cars <- c('Punto', 'Golf', 'Jazz')
+colour <- c('beige', 'gold', 'neon pink')
+fuel <- c(100,100,100) # inital percent of the fuel tank that is full
+ppm <- c(10,20,5) # percent per mile fuel usage
+
+remaining <- c() # what percentage of the fuel tank remains
+miles <- 3 # how many miles do you plan to travel
+
+for (i in 1:length(fuel)) { # calculate the new fuel tank values
+  remaining <- c(remaining, (fuel[i] - (ppm[i]*3)))
+}
+
+car_frame <- data.frame(cars, fuel, remaining) # create a data frame
+car_frame.m <- melt(car_frame, id.vars='cars') # melt the data frame for plotting
+
+carplot <- ggplot(car_frame.m, aes(cars, value)) +   
+  geom_bar(aes(fill = variable), position = "dodge", stat="identity")
+
+```
+## The resulting plot
+```{r echo = FALSE, fig.keep=carplot}
+carplot
+```
+
+## Adding Some functions
+- The previous code can be improved by adding some functions.
+
+- That way we can repeat what we did by calling the functions.
+
+- We don't need to copy, paste and change the code that way.
+
+## Drive Car
+```{r echo = TRUE}
+drive_car <- function(starting_tank, ppm, distance) {
+  tank_changes = c() # track the fuel usage using what % remains
+  for(i in 0:distance) {
+    new_tank <- starting_tank - (ppm * distance)
+    if(new_tank < 0) {
+      new_tank <- 0 # can't use negative fuel
+    }
+    tank_changes <- c(tank_changes, new_tank)
+  }
+  return(tank_changes) # return the fuel usage
+}
+```
+
+## Refuel Car
+```{r echo = TRUE}
+# creating a function to refuel a car
+refuel_car <- function(tank_changes, tank_percentage) {
+  new_tank <- tank_changes[length(tank_changes)] + tank_percentage
+  if(new_tank > 100) {
+    new_tank <- 100 # cant have more than a 100% full tank.
+  }
+  return(c(tank_changes, new_tank))
+}
+
+```
+
