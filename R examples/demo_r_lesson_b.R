@@ -26,13 +26,13 @@ refuel_car <- function(tank_changes, tank_percentage) {
 }
 
 na.padding <- function(x,len){
-  x[1:len]
+  return(x[1:len])
 }
 
 
 data_frame_ify <- function(l,...){
   maxlen <- max(sapply(l,length))
-  data.frame(lapply(l,na.padding,len=maxlen),...)
+  return(data.frame(lapply(l,na.padding,len=maxlen),...))
 }
 
 cars <- c('Punto', 'Golf', 'Jazz')
@@ -48,7 +48,9 @@ punto_fuel_hist <- refuel_car(punto_fuel_hist, 100)
 punto_fuel_hist <- drive_car(100, 10, 20)
 
 
-car_frame <- data_frame_ify(cars, punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
+maxlen <- max(length(punto_fuel_hist),length(golf_fuel_hist),length(jazz_fuel_hist))
+car_frame <- data.frame(punto_fuel_hist[1:maxlen], golf_fuel_hist[1:maxlen], jazz_fuel_hist[1:maxlen])
+
 
 ggplot(car_frame, aes(x=seq(0,length(car_frame$punto_fuel_hist)-1), y=punto_fuel_hist)) +   
   geom_line()
