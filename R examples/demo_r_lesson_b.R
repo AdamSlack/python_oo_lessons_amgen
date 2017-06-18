@@ -25,33 +25,43 @@ refuel_car <- function(tank_changes, tank_percentage) {
   return(c(tank_changes, new_tank))
 }
 
-na.padding <- function(x,len){
-  return(x[1:len])
+pad_lengths <- function(...) {
+  arguments <- list(...)
+  lengths < c()
+  for(arg in arguments) {
+    lengths <- c(lengths, length(arg))
+  }
+  maxlen <- max(arguments)
+  
+  level_args <- list()
+  
+  for(arg in arguments){
+    level_args[length(level_args)] <- arg[1:maxlength]
+  }
+  
+  return(level_args)
 }
 
-
-data_frame_ify <- function(l,...){
-  maxlen <- max(sapply(l,length))
-  return(data.frame(lapply(l,na.padding,len=maxlen),...))
-}
-
-cars <- c('Punto', 'Golf', 'Jazz')
-
+# tracking the fuel usage of Jazz
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
 
-
+# tracking the fuel usage of Golf
 golf_fuel_hist <- drive_car(100, 2, 10)
 golf_fuel_hist <- c(golf_fuel_hist, drive_car(golf_fuel_hist[length(golf_fuel_hist)], 5, 10))
 
+# tracking the fuel usage of punto
 punto_fuel_hist <- drive_car(100, 10, 20)
-punto_fuel_hist <- refuel_car(punto_fuel_hist, 100)
-punto_fuel_hist <- drive_car(100, 10, 20)
+punto_fuel_hist <- refuel_car(punto_fuel_hist, 70)
+punto_fuel_hist <- c(punto_fuel_hist, drive_car(70, 10, 20))
 
 
-maxlen <- max(length(punto_fuel_hist),length(golf_fuel_hist),length(jazz_fuel_hist))
-car_frame <- data.frame(punto_fuel_hist[1:maxlen], golf_fuel_hist[1:maxlen], jazz_fuel_hist[1:maxlen])
+
+padded_data <- pad_lengths(punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
+
+car_frame <- t(data.frame(punto = punto_fuel_hist[1:maxlen], golf = golf_fuel_hist[1:maxlen], jazz = jazz_fuel_hist[1:maxlen]))
+car_frame.m <- melt(car_frame, id.vars="Var1", value.name ="value", variable.name = "Var2")
 
 
-ggplot(car_frame, aes(x=seq(0,length(car_frame$punto_fuel_hist)-1), y=punto_fuel_hist)) +   
-  geom_line()
+ggplot(car_frame.m, aes(x=Var2, y=value, group=Var1, colour = Var1)) +   
+  geom_line() + geom_point()
 
