@@ -1,16 +1,9 @@
-# 
-# R demonstration of Standard Procedural With some Functions
-# 
-
-library(ggplot2)
-library(reshape2)
-
 drive_car <- function(starting_tank, ppm, distance) {
   tank_changes = c() # track the fuel usage using what % remains
   for(i in 0:distance) {
     new_tank <- starting_tank - (ppm * i)
     if(new_tank >= 0) {
-      tank_changes <- c(tank_changes, new_tank) # only spend fuel if there was fuel to spend.
+     tank_changes <- c(tank_changes, new_tank) # only spend fuel if there was fuel to spend.
     }
   }
   return(tank_changes) # return the fuel usage
@@ -27,20 +20,33 @@ refuel_car <- function(tank_changes, tank_percentage) {
 
 pad_lengths <- function(...) {
   arguments <- list(...)
-  lengths < c()
-  for(arg in arguments) {
-    lengths <- c(lengths, length(arg))
-  }
-  maxlen <- max(arguments)
-  
-  level_args <- list()
-  
-  for(arg in arguments){
-    level_args[length(level_args)] <- arg[1:maxlength]
-  }
-  
-  return(level_args)
+  max_length <- max(lengths(arguments))
+  args <- lapply(arguments, function(x, max_len) {
+    length(x) <- max_length
+    return(x)
+  }, max_len = max_length)
+  return(args)
 }
+
+
+create_data_frame <-function(car_names, ...) {
+  car_data <- list(...)
+  
+  # create even lengthed data vectors
+  padded_fuel <- do.call(pad_lengths, car_data)
+  
+  # produce a dataframe of the data with desired titles.
+  car_frame <- data.frame(padded_fuel)
+  colnames(car_frame) <- car_names
+  
+  # transforming data frame for plotting multiple series
+  car_frame.m <- melt(t(car_frame), id.vars="Cars",
+                                    value.name ="Fuel",
+                                    variable.name = "Time")
+  colnames(car_frame.m) <- c('Cars', 'Time', 'Fuel')
+  
+  return(car_frame.m)
+  }
 
 # tracking the fuel usage of Jazz
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
@@ -54,14 +60,12 @@ punto_fuel_hist <- drive_car(100, 10, 20)
 punto_fuel_hist <- refuel_car(punto_fuel_hist, 70)
 punto_fuel_hist <- c(punto_fuel_hist, drive_car(70, 10, 20))
 
-
-
-padded_data <- pad_lengths(punto_fuel_hist, golf_fuel_hist, jazz_fuel_hist)
-
-car_frame <- t(data.frame(punto = punto_fuel_hist[1:maxlen], golf = golf_fuel_hist[1:maxlen], jazz = jazz_fuel_hist[1:maxlen]))
-car_frame.m <- melt(car_frame, id.vars="Var1", value.name ="value", variable.name = "Var2")
-
-
-ggplot(car_frame.m, aes(x=Var2, y=value, group=Var1, colour = Var1)) +   
+# padding the car fuel data
+car_data_frame <- create_data_frame(car_names = c('Punto', 'Golf', 'Jazz'),
+                                   punto_fuel_hist,
+                                   golf_fuel_hist,
+                                   jazz_fuel_hist)
+ 
+# plot those series using ggplot.
+ggplot(car_data_frame, aes(x=Time, y=Fuel, group=Cars, colour = Cars)) +   
   geom_line() + geom_point()
-

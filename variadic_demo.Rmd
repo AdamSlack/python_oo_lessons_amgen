@@ -1,0 +1,42 @@
+---
+title: "Variadic Function"
+author: "adam_slack"
+date: "2017-6-20"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Variadic Function
+
+```{r echo=TRUE}
+# function takes any amount of parameters (...)
+pad_lengths <- function(...) {
+  
+  arguments <- list(...)
+  
+  max_length <- max(lengths(arguments))
+  
+  # Set the length of each argument passed to the function
+  args <- lapply(arguments, function(x, max_len) {
+    length(x) <- max_length
+    return(x)
+  }, max_len = max_length)
+ 
+  # return the new collection of equal length arguments
+  return(args)
+}
+
+```
+## Variadic Function
+```{r echo=TRUE}
+a <- c(1:20)
+b <- c(1:15)
+c <- c(1:10)
+
+padded_data <- pad_lengths(a,b,c)
+padded_data
+
+```
