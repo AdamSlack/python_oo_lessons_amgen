@@ -82,6 +82,8 @@ Each Class can be used to instantiate objects
 
 invisible(library(ggplot2))
 invisible(library(reshape2))
+library(R6)
+
 ```
 
 ```{r echo = TRUE}
@@ -89,17 +91,25 @@ cars <- c('Punto', 'Golf', 'Jazz')
 colour <- c('beige', 'gold', 'neon pink')
 fuel <- c(100,100,100) # inital percent of the fuel tank that is full
 ppm <- c(10,20,5) # percent per mile fuel usage
+```
 
+```{r echo = TRUE}
 remaining <- c() # what percentage of the fuel tank remains
 miles <- 3 # how many miles do you plan to travel
+```
 
+```{r echo = TRUE}
 for (i in 1:length(fuel)) { # calculate the new fuel tank values
   remaining <- c(remaining, (fuel[i] - (ppm[i]*3)))
 }
+```
 
+```{r echo = TRUE}
 car_frame <- data.frame(cars, fuel, remaining) # create a data frame
 car_frame.m <- melt(car_frame, id.vars='cars') # melt the data frame for plotting
+```
 
+```{r echo = TRUE}
 carplot <- ggplot(car_frame.m, aes(cars, value)) +   
   geom_bar(aes(fill = variable), position = "dodge", stat="identity")
 
@@ -199,12 +209,16 @@ create_data_frame <-function(car_names, ...) {
     - Reduced risk of side effects
 ```{r echo=TRUE}
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
+```
 
+```{r echo = TRUE}
 golf_fuel_hist <- drive_car(100, 2, 10)
 golf_fuel_hist <- c(golf_fuel_hist,
                     drive_car(golf_fuel_hist[length(golf_fuel_hist)],
                               5, 10))
+```
 
+```{r echo = TRUE}
 punto_fuel_hist <- drive_car(100, 10, 20)
 punto_fuel_hist <- refuel_car(punto_fuel_hist, 70)
 punto_fuel_hist <- c(punto_fuel_hist, drive_car(70, 10, 20))
@@ -219,12 +233,16 @@ car_data_frame <- create_data_frame(car_names = c('Punto',
                                    punto_fuel_hist,
                                    golf_fuel_hist,
                                    jazz_fuel_hist)
- 
-fuel_line_plot <-ggplot(car_data_frame, aes(x = Time,
-                                            y = Fuel,
-                                            group  = Cars,
-                                            colour = Cars)) +   
-  geom_line() + geom_point()
+```
+
+```{r echo = TRUE}
+fuel_line_plot <-ggplot(car_data_frame, 
+                        aes(x = Time,
+                            y = Fuel,
+                            group  = Cars,
+                            colour = Cars)) +   
+                        geom_line() + 
+                        geom_point()
 ```
 
 ## The resulting plot
@@ -241,4 +259,429 @@ fuel_line_plot
     - means it doesn't have to be a fixed linear usage
 - The data is still being acted upon by functions
     - they could be grouped and protected further
+
+
+## R6 Classes
+- R has a range of differnt solutions to object oriented programming
+- R6 provides a similar style to many other languages.
+    - Private Data Members and Methods
+    - Public Data Members and Methods
+
+## R6 Classes
+- An R6 class is essentially a pair of lists
+- One list contains elements easily accessible
+- The other list contains elements protected from direct access
+- These are referred to as 'public' and 'private'
+
+## R6 Classes
+- In each list Data members and methods are defined
+- A constructor can be defined in the public list
+    - This is a special method that executes straight away
+    - Invoked whenever an instance is made.
+- The constructor allows you to initialise data members
+
+## Template Class
+```{r echo=TRUE}
+ClassName <- R6Class('ClassName',
+                  public = list(
+                  public_data = NULL,
+                    
+                  initialize = function(public_data, private_data) {
+                    self$public_data <- public_data
+                    private$private_data <- private_data
+                  },
+                  
+                  public_method = function() {}
+                ),
+                
+                private = list(
+                  private_data = NULL,
+                  private_method = function() { }
+                )
+)
+```
+
+## Car implementation
+- When implementing a Class you should think about a few aspects
+    - What functionality should my instances have?
+    - What Information should i know about each instance?
+    - What Information should be hidden from me?
     
+## Car Implementation
+Data Members
+
+-Public
+    - Name
+    - Current Amount of Fuel (Gallons)
+    - History of Fuel Usage (Gallons/minute)
+    - Current Speed (Miles/hour)
+-Private
+    - Max Speed (Miles/hour)
+    - Max Amount of Fuel (Gallons)
+    
+## Car Implementaion
+Methods
+
+- Public
+    - Class Constructor (Initialize)
+    - Get Max Speed
+    - Get Max Fuel
+    - Drive
+    - Refuel
+    
+- Private
+    - None...
+
+## Public Data Members 
+- Start off defining Public Data members and methods
+    - Data Members defined first, followed by the methods
+```{r echo=TRUE, eval=FALSE}
+Car <- R6Class('Car',
+               public = list(
+                 name = NULL,
+                 fuel_usage = NULL,
+                 current_speed = 0,
+                 current_tank = 0,
+```
+
+## Class Constructor
+- The constructor should be the first method defined
+- This is called whenever a new instance of the class is made.
+```{r echo=TRUE, eval=FALSE}
+
+   ## CLASS CONSTRUCTOR
+   initialize = function(name, max_speed, max_tank, current_tank) {
+     self$name          <- name
+     self$fuel_usage    <- c(current_tank)
+     self$current_tank  <- current_tank
+     private$max_speed  <- max_speed
+     private$max_tank   <- max_tank
+   },
+```
+
+## Public Getters
+- Used to get the value of a private data member
+- Means you can See the value, with no risk of altering it.
+```{r echo=TRUE, eval=FALSE}
+   get_max_speed = function() {
+     return(private$max_speed )
+   },
+```
+
+```{r echo=TRUE, eval=FALSE}
+
+   get_max_tank = function() {
+     return(private$max_speed)
+   },
+```
+
+## Public Methods - Drive
+```{r echo=TRUE, eval=FALSE}
+   drive = function(mph, distance, mpg) {
+     if(mph > private$max_speed) {
+       mph <- private$max_speed
+     }
+     mpm <- mph/60
+     journey_time <- distance/mpm
+     gallons_used <- distance/mpg
+     gallon_pm <- gallons_used/journey_time
+
+     for(i in 1:journey_time) {
+       self$current_tank = self$current_tank - gallon_pm
+       
+       if(self$current_tank < 0) {
+         self$current_tank = 0 .
+       }
+       self$fuel_usage <- c(self$fuel_usage, self$current_tank)  
+     }
+     return(self$fuel_usage)
+   },
+```
+
+## Public Methods - Refuel
+```{r echo=TRUE, eval=FALSE}
+   refuel = function(gallons_added) {
+     self$current_tank <- self$current_tank + gallons_added
+     if(self$current_tank > private$max_tank) {
+       self$current_tank <- private$max_tank
+     }
+     self$fuel_usage <- c(self$fuel_usage, self$current_tank)
+   }
+ ),
+
+```
+
+## Private Data
+- Private data Members and methods should be defined after public
+- Private Data Members should be defined before methods though.
+```{r echo=TRUE, eval=FALSE}
+
+   private = list(
+     # PRIVATE DATA MEMBERS
+     max_speed=NULL,
+     max_tank=NULL
+   ))
+```
+
+```{r echo=FALSE}
+Car <- R6Class('Car',
+               public = list(
+                 # PUBLIC DATA MEMBERS
+                 name = NULL,
+                 fuel_usage = NULL,
+                 current_speed = 0,
+                 current_tank = 0,
+
+                 ## CLASS CONSTRUCTOR
+                 initialize = function(name, max_speed, max_tank, current_tank) {
+                   self$name          <- name
+                   self$fuel_usage    <- c(current_tank)
+                   self$current_tank  <- current_tank
+                   private$max_speed  <- max_speed
+                   private$max_tank   <- max_tank
+                 },
+                 
+                 ## GETTERS
+                 get_max_speed = function() {
+                   return(private$max_speed )
+                 },
+                 
+                 get_max_tank = function() {
+                   return(private$max_speed)
+                 },
+                 
+                 ## PUBLIC METHODS
+                 drive = function(mph, distance, mpg) {
+                   if(mph > private$max_speed) {
+                     mph <- private$max_speed
+                   }
+                   mpm <- mph/60
+                   journey_time <- distance/mpm
+                   gallons_used <- distance/mpg
+                   gallon_pm <- gallons_used/journey_time
+
+                   for(i in 1:journey_time) {
+                     self$current_tank = self$current_tank - gallon_pm
+                     
+                     if(self$current_tank < 0) {
+                       self$current_tank = 0 # only spend fuel if there was fuel to spend.
+                     }
+                     self$fuel_usage <- c(self$fuel_usage, self$current_tank)  
+                   }
+                   return(self$fuel_usage)
+                 },
+                 
+                 refuel = function(gallons_added) {
+                   self$current_tank <- self$current_tank + gallons_added
+                   if(self$current_tank > private$max_tank) {
+                     self$current_tank <- private$max_tank
+                   }
+                   self$fuel_usage <- c(self$fuel_usage, self$current_tank)
+                 }
+               ),
+               private = list(
+                 # PRIVATE DATA MEMBERS
+                 max_speed=NULL,
+                 max_tank=NULL
+               ))
+
+
+DrivePlotProducer <- R6Class('PlotProducer',
+                             
+                             public = list(
+                               car_names = c(),
+                               
+                               pad_lengths = function(...) {
+                                 arguments <- list(...)
+                                 max_length <- max(lengths(arguments))
+                                 
+                                 args <- lapply(arguments, function(x, max_len) {
+                                   length(x) <- max_length
+                                   return(x)
+                                 }, max_len = max_length)
+                                 return(args)
+                               },
+                               
+                               create_data_frame = function(...) {
+                                 car_data <- list(...)
+                                 
+                                 padded_fuel <- do.call(self$pad_lengths, car_data)
+                                 car_frame <- data.frame(padded_fuel)
+                                 colnames(car_frame) <- self$car_names
+                                 
+                                 car_frame.m <- melt(t(car_frame), id.vars="Cars", 
+                                                     value.name ="Fuel",
+                                                     variable.name = "Time")
+                                 colnames(car_frame.m) <- c('Cars', 'Time', 'Fuel')
+                                 return(car_frame.m)
+                               },
+                               
+                               create_plot = function(...) {
+                                 car_objects <- list(...)
+                                 fuel_usages <- lapply(car_objects, function(x){return(x$fuel_usage)})
+                                 self$car_names <- lapply(car_objects, function(x){return(x$name)})
+                                 car_frame <- do.call(self$create_data_frame, fuel_usages)
+                                 
+                                return(ggplot(car_frame, aes(x = Time,
+                                                                             y = Fuel,
+                                                                             group  = Cars,
+                                                                             colour = Cars)) +   
+                                   geom_line() + geom_point())
+                               }
+                             )
+                          )
+
+```
+
+## The Class In Use
+Creating Instances of a Class to use.
+
+- Call the 'new' function associated with a class
+- Pass values as parameters to the class
+    - These are used in the initialisation/construction of the object
+```{r echo=TRUE}
+golf <- Car$new('Golf', 100, 10, 3)
+
+```
+- We now have a golf object
+    - All the functionality and data associated with a car.
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+golf$drive(10,10,10)
+golf$drive(mph=40, distance=10, mpg=30)
+```
+
+## Inspecting the Instance
+
+```{r echo=TRUE}
+golf
+```
+
+## Creating More Instances
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+golf <- Car$new('Golf', 100, 10, 3)
+golf$drive(10,10,10)
+golf$drive(mph=40, distance=10, mpg=30)
+```
+
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+jazz <- Car$new('Jazz', 200, 10, 10)
+jazz$drive(30, 2, 40)
+jazz$drive(40, 1, 38)
+jazz$drive(70, 10, 44)
+jazz$drive(110, 60, 30)
+```
+
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+fiat <- Car$new('Fiat', 90, 8, 1) # They have a fuel leak...
+fiat$drive(30, 3, 1)
+fiat$refuel(5) # Refueled to get to the garage
+fiat$drive(30, 0.5, 1)
+fiat$drive(40, 5, 40) # Fuel Leak Repaired
+fiat$drive(30, 2, 45)
+fiat$drive(60, 10, 45)
+```
+
+## What about the plotting aspect?
+- These Cars are quite straight forward to picture and visualise
+
+More abstract classes can exist.
+
+- Objects that have behaviour relating to:
+    - Plotting Figures
+    - Analyising Data
+    - Producing Datasets
+    
+## Plotting Car Fuel Data
+An Object specifically designed to plot Car Fuel Data.
+
+- Needs
+    - **Data Member:** Car Names
+    - **Method:** Plot Data
+    - **Method:** Pad Vectors
+    - **Method:** Create Data Frame
+
+- Could also Have
+    - Data members for specifying plot details...
+    - methods for handling specific plot details...
+    
+## Implementing a Car Plotter Object
+
+- Start Defining public Data Members
+
+```{r echo=TRUE, eval=FALSE}
+DrivePlotProducer <- R6Class('PlotProducer',
+                             
+                             public = list(
+                               car_names = c(),
+```
+
+## Pad Vectors
+- Then begin implementing public Methods
+```{r echo=TRUE, eval=FALSE}                             
+   pad_lengths = function(...) {
+     arguments <- list(...)
+     max_length <- max(lengths(arguments))
+     
+     args <- lapply(arguments, function(x, max_len) {
+       length(x) <- max_length
+       return(x)
+     }, max_len = max_length)
+     return(args)
+   },
+
+```
+
+## Create Data Frame
+```{r echo=TRUE, eval=FALSE}                             
+create_data_frame = function(...) {
+   car_data <- list(...)
+   
+   padded_fuel <- do.call(self$pad_lengths, car_data)
+   car_frame <- data.frame(padded_fuel)
+   colnames(car_frame) <- self$car_names
+   
+   car_frame.m <- melt(t(car_frame), id.vars="Cars", 
+                       value.name ="Fuel",
+                       variable.name = "Time")
+   colnames(car_frame.m) <- c('Cars', 'Time', 'Fuel')
+   return(car_frame.m)
+  },
+```
+
+## Create Plot
+```{r echo=TRUE, eval=FALSE}                             
+ create_plot = function(...) {
+       car_objects <- list(...)
+       fuel_usages <- lapply(car_objects, function(x){return(x$fuel_usage)})
+       self$car_names <- lapply(car_objects, function(x){return(x$name)})
+       car_frame <- do.call(self$create_data_frame, fuel_usages)
+       
+      return(ggplot(car_frame, aes(x = Time,
+                                                   y = Fuel,
+                                                   group  = Cars,
+                                                   colour = Cars)) +   
+         geom_line() + geom_point())
+     }
+   )
+)
+
+```
+
+## Using Create Plot
+- Create an Instance
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+plot_producer <- DrivePlotProducer$new()
+
+```
+
+- Then use the functionality of it
+```{r echo=TRUE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
+
+car_plot <- plot_producer$create_plot(golf, jazz, fiat)
+
+```
+
+## The Output
+```{r echo = FALSE, fig.keep=carplot, warning=FALSE,message=FALSE,error=FALSE}
+car_plot
+```

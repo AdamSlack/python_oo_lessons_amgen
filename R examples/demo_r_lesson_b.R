@@ -46,7 +46,7 @@ create_data_frame <-function(car_names, ...) {
   colnames(car_frame.m) <- c('Cars', 'Time', 'Fuel')
   
   return(car_frame.m)
-  }
+}
 
 # tracking the fuel usage of Jazz
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
