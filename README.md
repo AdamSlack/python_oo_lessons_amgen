@@ -5,7 +5,7 @@
 This Repository is split into two areas
 
 - :snake: Python Object Oriented Programming 
-- :cat: R Object Oriented Programming 
+- :dog: R Object Oriented Programming 
 
 ## :book: Python Object Oriented Programming
 The files associated with the Python OOP are there to serve as straightforward examples of how code bases may look.
