@@ -12,30 +12,36 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## What is Object Oriented Programming?
 
-- Object Oriented Programming (OOP) is a programming paradigm
+Object Oriented Programming **(OOP)** is a programming paradigm
 
-- Involves the grouping of data with functions
+Involves the grouping of **data with functions**
+    
     + These functions are used to apply changes to the contained data
 
-- A collection of Data and Functions is called a class
+A collection of Data and Functions is called a **class**
 
-- A Class is a blue print, from which instances of an object can be made
+You can view a class as a programming blue print
+    
+    - from which **instances** of an **object** can be made
 
 ## Pros and Cons of OOP
 
 Like all programming methodologies, there are upsides and downsides
 
 Pros                                | Cons
-------------------------------------|--------------------------
-Scalable and Manageable Code bases  | Can be time consuming to design and produce
-Less Code Redundancy                | Not always worth the effor for small projects
+------------------------------------|------------------------------------
+Scalable and Manageable Code bases  | **Can be time consuming to design and produce**
+Less Code Redundancy                | **Not always worth the effor for small projects**
 Portable and Re-usable code         |
 Protects data from unwanted changes |
 
 ## Functionality vs Data
-* Think about a program that involves cars
-    + What can a car do? (The functionality)
-    + What information you can record about a car? (The data)
+To give a **physical** example of functionality vs data.
+
+Think about a program that involves cars
+
++ What can a car do? **(The functionality)**
++ What information you can record about a car? **(The data)**
   
 Functionality       | Recordable Information
 --------------------| ----------------------
@@ -46,35 +52,46 @@ check current speed | Colour
 
 ## Where does this fit in with code?
 
-The information and functionality of a car in your program is specified inside of a class
+The information and functionality of a car in your program is **defined** inside of a class
 
 A Class is composed of two sections
 
-* Methods: 
+* **Methods**: 
     + What can the object do?
-* Attributes:
+* **Attributes**:
     + what information is stored with the object?
     
-Each Class can be used to instantiate objects
+Each Class can be used to **instantiate objects**
 
 ## A Class vs Objects
 
-- If a class is a blueprint, an object is a physical instance of it
+If a **class** is a **blueprint**, an **object** is a **physical instance** of it
 
-- A class can be used to create as many instances as you like
-    - Same functionality
-    - Same Data members
-    - Different values for the data.
+A class can be used to create as many instances as you like
 
-- Think of 3 different cars
-    + Fiat Punto, Volkswagen Golf', Honda Jazz
+- Same functionality
+- Same Data members
+- **Different values** for the data.
 
-- Each instance is a car
-    + Same functionality
-    + Same information can be recorded
-    + At anyone time each car will have different values
+Think of 3 different cars
+
++ Fiat Punto, Volkswagen Golf, Honda Jazz
+
+Each instance is a car
++ Same functionality
++ Same information can be recorded
++ At anyone time each car will have different values
     
-## Standard R procedural Code
+## Getting to some code
+We're going to write a program that has **two aims**:
+
+- **Track** how full the **fuel** tank of a car is over a given journey.
+- **Plot** the **results** in a chart.
+
+Should be nice and straightforward!
+
+We'll do it in a overly simplistic **procedural** way.
+
 ```{r echo = FALSE, results='hide',warning=FALSE,message=FALSE,error=FALSE}
 # 
 # R demonstration of Standard Procedural code.
@@ -86,59 +103,114 @@ library(R6)
 
 ```
 
+## Initialising some Variables
+First you want to initialise some variables
+
+These are some cars and some data.
 ```{r echo = TRUE}
 cars <- c('Punto', 'Golf', 'Jazz')
 colour <- c('beige', 'gold', 'neon pink')
-fuel <- c(100,100,100) # inital percent of the fuel tank that is full
-ppm <- c(10,20,5) # percent per mile fuel usage
+
+# inital percent of the fuel tank that is full
+fuel <- c(100,100,100) 
+
+# percent per mile fuel usage
+ppm <- c(10,20,5) 
+```
+
+## Using the data
+Next we want to make use of the initialised variables
+
+- we're going to 'simulate' the driving of a car
+    - this will get the amount of fuel left over.
+```{r echo = TRUE}
+# To track what percentage of the fuel tank remains
+remaining <- c() 
+
+# Do define many miles you plan to travel
+miles <- 3
 ```
 
 ```{r echo = TRUE}
-remaining <- c() # what percentage of the fuel tank remains
-miles <- 3 # how many miles do you plan to travel
-```
-
-```{r echo = TRUE}
-for (i in 1:length(fuel)) { # calculate the new fuel tank values
+for (i in 1:length(fuel)) { 
+  # calculate the new fuel tank values
   remaining <- c(remaining, (fuel[i] - (ppm[i]*3)))
 }
 ```
 
+## Plotting the results
+We want to see the results of the 'simulation'
+
+- we need to transform the resulting data
+    - Using [melt](http://www.statmethods.net/management/reshape.html) we can plot easily
 ```{r echo = TRUE}
-car_frame <- data.frame(cars, fuel, remaining) # create a data frame
-car_frame.m <- melt(car_frame, id.vars='cars') # melt the data frame for plotting
+# create a data frame
+car_frame <- data.frame(cars, fuel, remaining)
+
+ # melt the data frame for plotting
+car_frame.m <- melt(car_frame, id.vars='cars')
 ```
 
 ```{r echo = TRUE}
 carplot <- ggplot(car_frame.m, aes(cars, value)) +   
-  geom_bar(aes(fill = variable), position = "dodge", stat="identity")
+           geom_bar(aes(fill = variable), 
+                    position = "dodge",
+                    stat="identity")
 
 ```
+
 ## The resulting plot
 ```{r echo = FALSE, fig.keep=carplot}
 carplot
 ```
 
 ## Adding Some functions
-- The previous code can be improved by adding some functions.
+The previous code can be **improved** in many ways
 
-- That way we can repeat what we did by calling the functions.
+- adding some **functions** will help.
 
-- We don't need to copy, paste and change the code that way.
+
+That way we can **repeat** what we did by calling the **functions**.
+
+- This will increase usability.
+
+
+**Don't** need to copy, paste and change the code that way.
+
+## The next program
+We're going to the same thing again.
+
+- **Track** how full the **fuel** tank of a car is over a given journey.
+- **Plot** the **results** in a chart.
+
+Since we're going to have some **better designed** code
+
+- We can do **more** for the **same effort**
+
+## What is the plan?
+We know a few things about cars now.
+
+- They can **drive**
+- We can **refuel** them
+
+We also no a few things about **plotting data**.
+
+- **Methods to plot** it all for us
+
 
 ## Drive Car
-1. For the amount of time specified in distance
-2. Calculate the change in fuel level
-    - If the fuel goes below 0% dont record the change
-3. Return the changes in fuel usage
+1. For the amount of **time specified** in distance
+2. Calculate the **change in fuel** level
+    - If the fuel goes **below 0%** dont record the change
+3. **Return the changes** in fuel usage
 
 ```{r echo = TRUE}
 drive_car <- function(starting_tank, ppm, distance) {
   tank_changes = c() # track the fuel usage using what % remains
   for(i in 0:distance) {
     new_tank <- starting_tank - (ppm * i)
-    if(new_tank >= 0) {
-      tank_changes <- c(tank_changes, new_tank) # only spend fuel if there was fuel to spend.
+    if(new_tank >= 0) { # only spend fuel if there was fuel to spend.
+      tank_changes <- c(tank_changes, new_tank) 
     }
   }
   return(tank_changes) # return the fuel usage
@@ -147,9 +219,9 @@ drive_car <- function(starting_tank, ppm, distance) {
 ```
 
 ## Refuel Car
-1. Record the amount of fuel added 
-2. Cap the fuel level at 100%
-3. Return the vector of fuel level changes
+1. Record the amount of **fuel added** 
+2. **Cap** the fuel level at **100%**
+3. **Return** the **vector of fuel** level changes
 
 ```{r echo = TRUE}
 # creating a function to refuel a car
@@ -163,15 +235,17 @@ refuel_car <- function(tank_changes, tank_percentage) {
 
 ```
 ## Some data oriented functions
-- Some functions will handle more abstract (or data oriented) aspects
+- Some functions will handle more **abstract** (or data oriented) aspects
 
-- Padding of vectors in a collection such that they have equal length
+- **Padding of vectors** in a collection such that they have **equal length**
 
-- the construction of a dataframe so that plotting can be performed
+- The construction of a **dataframe** so that plotting can be performed
+
+*The next function is just something we would have realised we needed -- Hindsight is great!*
 
 ## Pad Lengths
-1. get the length of the longest vector
-2. set the lengths of each vector to be that length
+1. **Get** the length of the **longest vector**
+2. **Set** the lengths **all** vectors to be that length
 ```{r echo=TRUE}
 pad_lengths <- function(...) {
   arguments <- list(...)
@@ -183,10 +257,12 @@ pad_lengths <- function(...) {
   return(args)
 }
 ```
+There are some **funky** things in here (see: **...** & **lapply**)
+
 ## Create Data Frame
-1. Pad vectors passed to the function
-2. Create the data frame and set the column names
-3. Transform and 'melt' the dataframe
+1. Padded vectors **passed** to the function
+2. Create the **data frame** and set the **column names**
+3. **Transform** and **melt** the dataframe
 ```{r echo=TRUE}
 create_data_frame <-function(car_names, ...) {
   car_data <- list(...)
@@ -204,9 +280,11 @@ create_data_frame <-function(car_names, ...) {
 ```
 
 ## Using the functions
-- You now have some functions
-- These can be used, shared and adapted
-    - Reduced risk of side effects
+You now have some functions!
+
+These can be used, shared and adapted
+
+- Reduced risk of side effects
 ```{r echo=TRUE}
 jazz_fuel_hist <- drive_car(100, 7.5, 10)
 ```
@@ -226,21 +304,19 @@ punto_fuel_hist <- c(punto_fuel_hist, drive_car(70, 10, 20))
 ```
 
 ## Using the functions
+Using the more abstract functions.
 ```{r echo=TRUE}
-car_data_frame <- create_data_frame(car_names = c('Punto',
-                                                  'Golf',
-                                                  'Jazz'),
-                                   punto_fuel_hist,
-                                   golf_fuel_hist,
-                                   jazz_fuel_hist)
+car_data_frame <- create_data_frame(
+                      car_names = c('Punto','Golf','Jazz'),
+                      punto_fuel_hist,
+                      golf_fuel_hist,
+                      jazz_fuel_hist)
 ```
 
 ```{r echo = TRUE}
 fuel_line_plot <-ggplot(car_data_frame, 
-                        aes(x = Time,
-                            y = Fuel,
-                            group  = Cars,
-                            colour = Cars)) +   
+                        aes(x = Time,  y = Fuel,
+                            group  = Cars, colour = Cars)) +   
                         geom_line() + 
                         geom_point()
 ```
@@ -253,32 +329,52 @@ fuel_line_plot
 
 ## This Isn't Perfect
 
-- There is always way to improve Code
-- The Drive function could be adapted
-    - allow the user to pass a function that determines fuel usage
-    - means it doesn't have to be a fixed linear usage
-- The data is still being acted upon by functions
-    - they could be grouped and protected further
+There is **always** way to improve Code
+
+The Drive function could be adapted
+
+- Allow the user to **pass a function** that determines fuel usage
+- Means it doesn't have to be a fixed **linear usage**
+
+The data is still being acted upon by functions
+
+- Where having to track its changes ourselves.
+- They could be **grouped and protected** further
 
 
 ## R6 Classes
-- R has a range of differnt solutions to object oriented programming
-- R6 provides a similar style to many other languages.
-    - Private Data Members and Methods
-    - Public Data Members and Methods
+R has a range of different solutions on offer for **OOP**
+
+**R6** is a library that provides **OO** functionality
+
+- It does so in a similar style to many other languages.
+    - **Private** Data Members and Methods
+    - **Public** Data Members and Methods
 
 ## R6 Classes
-- An R6 class is essentially a pair of lists
-- One list contains elements easily accessible
-- The other list contains elements protected from direct access
-- These are referred to as 'public' and 'private'
+An **R6** class is essentially a **pair of lists**
+
+- One list contains elements easily **accessible**
+- The other list contains elements **protected** from direct access
+
+These are referred to as *'public'* and *'private'*
 
 ## R6 Classes
-- In each list Data members and methods are defined
-- A constructor can be defined in the public list
-    - This is a special method that executes straight away
-    - Invoked whenever an instance is made.
-- The constructor allows you to initialise data members
+How are these lists structured?
+
+In each list **Data members** and **methods** are defined
+
+R is a *functional language* at heart
+
+- Meaning that **functions** are treated as **1st class citizens**
+    - Can be used the same way as a regular old variable.
+
+A class **constructor** can be defined in the public list
+
+- This is a special method that executes **during instantiation**
+- Invoked whenever an instance is made.
+
+The **constructor** allows you to **initialise data members**
 
 ## Template Class
 ```{r echo=TRUE}
@@ -302,39 +398,60 @@ ClassName <- R6Class('ClassName',
 ```
 
 ## Car implementation
-- When implementing a Class you should think about a few aspects
-    - What functionality should my instances have?
-    - What Information should i know about each instance?
-    - What Information should be hidden from me?
-    
-## Car Implementation
-Data Members
+When implementing a Class you should think about a few aspects
 
--Public
-    - Name
-    - Current Amount of Fuel (Gallons)
-    - History of Fuel Usage (Gallons/minute)
-    - Current Speed (Miles/hour)
--Private
-    - Max Speed (Miles/hour)
-    - Max Amount of Fuel (Gallons)
+- What **functionality** should each instances have?
+
+- What **Information** should **visible** about each instance?
+
+- What **Information** should be **hidden** from me?
+
+## Getting to some Code
+
+Going back to the car example
+
+Were going to do the **same thing again**
+
+- Track fuel Usage
+- Plot the fuel usage over time.
+
+Doing in an object oriented way will allow us to produce more **generalised** code
+
+This code becomes more portable and can satisfy more **use-cases** as a result.
+
+## Car Implementation
+**Data Members**
+
+Public
+
+- Name
+- Current Amount of Fuel (Gallons)
+- History of Fuel Usage (Gallons/minute)
+- Current Speed (Miles/hour)
+
+Private
+
+- Max Speed (Miles/hour)
+- Max Amount of Fuel (Gallons)
     
 ## Car Implementaion
-Methods
+**Methods**
 
-- Public
-    - Class Constructor (Initialize)
-    - Get Max Speed
-    - Get Max Fuel
-    - Drive
-    - Refuel
+Public
+- Class Constructor (Initialize)
+- Get Max Speed
+- Get Max Fuel
+- Drive
+- Refuel
     
-- Private
-    - None...
+Private
+
+- None...
 
 ## Public Data Members 
-- Start off defining Public Data members and methods
-    - Data Members defined first, followed by the methods
+Start off defining **Public Data members** and **methods**
+
+- **Data Members** defined **first**, followed by the methods
 ```{r echo=TRUE, eval=FALSE}
 Car <- R6Class('Car',
                public = list(
@@ -345,7 +462,8 @@ Car <- R6Class('Car',
 ```
 
 ## Class Constructor
-- The constructor should be the first method defined
+The **constructor** should be the **first** method defined
+
 - This is called whenever a new instance of the class is made.
 ```{r echo=TRUE, eval=FALSE}
 
@@ -360,8 +478,9 @@ Car <- R6Class('Car',
 ```
 
 ## Public Getters
-- Used to get the value of a private data member
-- Means you can See the value, with no risk of altering it.
+Used to get the value of a private data member.
+
+- This means you can see the value, with *no risk* of altering it.
 ```{r echo=TRUE, eval=FALSE}
    get_max_speed = function() {
      return(private$max_speed )
